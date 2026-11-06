@@ -1,0 +1,58 @@
+name: Android APK ve Play paketi (AAB) derle
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: İmza anahtarını hazırla
+        env:
+          KS_B64: ${{ secrets.NOVA_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.NOVA_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KS_B64" ] && [ -n "$KS_PASS" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/nova-imza.jks"
+            echo "NOVA_KEYSTORE=$RUNNER_TEMP/nova-imza.jks" >> "$GITHUB_ENV"
+            echo "NOVA_KEYSTORE_PASSWORD=$KS_PASS" >> "$GITHUB_ENV"
+            echo "NOVA imza anahtarı kullanılıyor."
+          else
+            echo "::warning::NOVA_KEYSTORE_BASE64 / NOVA_KEYSTORE_PASSWORD sırları yok — APK geçici anahtarla imzalanacak (güncelleme üzerine kurulamaz)."
+          fi
+
+      - name: APK ve AAB derle
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease bundleRelease --no-daemon --stacktrace
+          mv app/build/outputs/bundle/release/*.aab "app/build/outputs/bundle/release/NOVA-Yapay-Zeka-Play-${GITHUB_REF_NAME#v}.aab" || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NOVA-Yapay-Zeka-Android-APK
+          path: android/app/build/outputs/apk/release/*.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NOVA-Yapay-Zeka-Google-Play-AAB
+          path: android/app/build/outputs/bundle/release/*.aab
+
+      - name: Sürüme ekle
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: android/app/build/outputs/apk/release/*.apk
+          name: NOVA Yapay Zeka ${{ github.ref_name }}

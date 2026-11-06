@@ -1,0 +1,95 @@
+{
+  "name": "nova-yapay-zeka",
+  "productName": "NOVA Yapay Zeka",
+  "version": "1.1.0",
+  "description": "NOVA Yapay Zeka — seni dinleyen, konuşan, 18 uzman ajanlı Türkçe kişisel asistan",
+  "main": "main.js",
+  "author": "Samet Şahin <@xsametsahinx>",
+  "license": "MIT",
+  "homepage": "https://github.com/pepsicosamet-arch/NovaYapayZeka",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pepsicosamet-arch/NovaYapayZeka.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win --x64 --publish never",
+    "dist:portable": "electron-builder --win portable --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.nova.yapayzeka",
+    "productName": "NOVA Yapay Zeka",
+    "copyright": "© 2026 Samet Şahin",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "build/icon.png",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "NOVA Yapay Zeka",
+      "menuCategory": "NOVA",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "installerSidebar": "build/installerSidebar.bmp",
+      "uninstallerSidebar": "build/installerSidebar.bmp",
+      "installerHeader": "build/installerHeader.bmp",
+      "license": "build/lisans.txt",
+      "installerLanguages": [
+        "tr_TR"
+      ],
+      "language": "1055",
+      "artifactName": "NOVA-Yapay-Zeka-Setup-${version}.exe"
+    },
+    "portable": {
+      "artifactName": "NOVA-Yapay-Zeka-Tasinabilir-${version}.exe"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "pepsicosamet-arch",
+        "repo": "NovaYapayZeka",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  }
+}

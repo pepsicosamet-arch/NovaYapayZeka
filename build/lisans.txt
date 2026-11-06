@@ -1,0 +1,11 @@
+NOVA Yapay Zeka — Lisans Sözleşmesi
+
+Telif Hakkı (c) 2026 Samet Şahin
+
+Bu yazılım MIT Lisansı ile dağıtılmaktadır.
+
+Bu yazılımın ve ilgili belgelerin bir kopyasını edinen herkese, yazılımı kısıtlama olmaksızın kullanma, kopyalama, değiştirme, birleştirme, yayınlama, dağıtma, alt lisanslama ve/veya satma hakkı ücretsiz olarak verilir; şu koşulla ki yukarıdaki telif hakkı bildirimi ve bu izin bildirimi yazılımın tüm kopyalarında veya önemli bölümlerinde yer alır.
+
+YAZILIM "OLDUĞU GİBİ" SUNULUR; SATILABİLİRLİK, BELİRLİ BİR AMACA UYGUNLUK VE İHLAL ETMEME GARANTİLERİ DAHİL ANCAK BUNLARLA SINIRLI OLMAMAK ÜZERE AÇIK VEYA ZIMNİ HİÇBİR GARANTİ VERİLMEZ. YAZARLAR VEYA TELİF HAKKI SAHİPLERİ HİÇBİR DURUMDA YAZILIMDAN VEYA YAZILIMIN KULLANIMINDAN DOĞAN HERHANGİ BİR TALEP, ZARAR VEYA DİĞER YÜKÜMLÜLÜKLERDEN SORUMLU TUTULAMAZ.
+
+Yapay zekâ yanıtları hakkında: NOVA Yapay Zeka, kullanıcının seçtiği yapay zekâ servisine (Ollama, OpenAI, Anthropic, Google, Groq, OpenRouter vb.) bağlanır. Bu servislerin kullanım koşulları ve ücretleri kullanıcının sorumluluğundadır. Yapay zekâ yanıtları hata içerebilir; önemli kararlar öncesinde doğrulayınız.

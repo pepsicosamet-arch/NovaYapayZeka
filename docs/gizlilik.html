@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOVA Yapay Zeka — Gizlilik Politikası</title>
+<style>
+  :root { --bg:#ffffff; --text:#14202b; --dim:#5b6b78; --line:#e3e8ec; --acc:#b86e00; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#030b14; --text:#e3f1fb; --dim:#8fa8ba; --line:#16303f; --acc:#f5a524; } }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:28px; line-height:1.2; margin:0 0 6px; }
+  h2 { font-size:19px; margin:32px 0 8px; }
+  .meta { color:var(--dim); font-size:14px; margin-bottom:24px; }
+  ul { padding-left:20px; }
+  li { margin:4px 0; }
+  table { width:100%; border-collapse:collapse; font-size:14.5px; margin:8px 0; }
+  th, td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  a { color:var(--acc); }
+  .box { border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>NOVA Yapay Zeka — Gizlilik Politikası</h1>
+  <div class="meta">Son güncelleme: 7 Kasım 2026 · Geliştirici: Samet Şahin</div>
+
+  <p class="box">Kısaca: NOVA'nın kendi sunucusu yoktur. Hesap açtırmaz, reklam göstermez, seni takip etmez. Konuşmaların ve notların telefonunda/bilgisayarında saklanır. Bir soruyu cevaplamak için yalnızca <b>senin seçtiğin</b> yapay zekâ servisine gönderilir.</p>
+
+  <h2>1. Bu politika neyi kapsar?</h2>
+  <p>Bu politika, Samet Şahin tarafından geliştirilen <b>NOVA Yapay Zeka</b> uygulamasının Android ve Windows sürümleri için geçerlidir.</p>
+
+  <h2>2. Toplanan ve işlenen bilgiler</h2>
+  <table>
+    <tr><th>Bilgi</th><th>Ne için</th><th>Nerede kalır / kime gider</th></tr>
+    <tr><td>Ses (mikrofon)</td><td>Sesli komutları anlamak</td><td>Yalnızca dinleme açıkken ve konuştuğunda kaydedilir; yazıya çevrilmesi için seçtiğin servise (OpenAI, Google Gemini ya da Groq) gönderilir. Uygulama ses kaydı saklamaz.</td></tr>
+    <tr><td>Yazdığın / söylediğin mesajlar</td><td>Cevap üretmek</td><td>Seçtiğin yapay zekâ servisine gönderilir. Konuşma geçmişi cihazında saklanır, istediğin an silebilirsin.</td></tr>
+    <tr><td>Notlar, hatırlatmalar, alarmlar, takvim, hafıza notları</td><td>Uygulamanın araçları</td><td>Yalnızca cihazında saklanır, hiçbir yere gönderilmez. (Hafıza notları, cevapların sana uygun olması için seçtiğin yapay zekâya bağlam olarak gönderilir.)</td></tr>
+    <tr><td>Şehir adı</td><td>Hava durumu</td><td>Open-Meteo hava durumu servisine gönderilir. Konum (GPS) kullanılmaz.</td></tr>
+    <tr><td>API anahtarların</td><td>Yapay zekâ servislerine bağlanmak</td><td>Yalnızca cihazında saklanır; sadece ilgili servise gönderilir.</td></tr>
+    <tr><td>Cevap bildirimleri</td><td>Uygunsuz yapay zekâ cevaplarını işaretlemek</td><td>Cihazında saklanır. E-postayla göndermeyi seçersen, yalnızca senin gönderdiğin e-posta geliştiriciye ulaşır.</td></tr>
+    <tr><td>Adın (isteğe bağlı)</td><td>Sana adınla hitap etmek</td><td>Cihazında saklanır; yapay zekâya bağlam olarak gönderilir.</td></tr>
+  </table>
+  <p>NOVA; reklam kimliği, konum, rehber, fotoğraf, dosya ya da cihaz tanımlayıcısı <b>toplamaz</b>. Analitik ya da reklam kütüphanesi içermez.</p>
+
+  <h2>3. Üçüncü taraf servisler</h2>
+  <p>Hangi yapay zekâ servisini kullanacağını sen seçersin ve anahtarını sen girersin. Mesajların, o servisin kendi gizlilik politikasına göre işlenir:</p>
+  <ul>
+    <li>OpenAI (ChatGPT) — <a href="https://openai.com/policies/privacy-policy">openai.com/policies/privacy-policy</a></li>
+    <li>Google (Gemini) — <a href="https://policies.google.com/privacy">policies.google.com/privacy</a></li>
+    <li>Anthropic (Claude) — <a href="https://www.anthropic.com/legal/privacy">anthropic.com/legal/privacy</a></li>
+    <li>xAI (Grok) — <a href="https://x.ai/legal/privacy-policy">x.ai/legal/privacy-policy</a></li>
+    <li>DeepSeek — <a href="https://platform.deepseek.com/downloads/DeepSeek%20Privacy%20Policy.html">platform.deepseek.com</a></li>
+    <li>Mistral AI — <a href="https://mistral.ai/terms/#privacy-policy">mistral.ai/terms</a></li>
+    <li>Groq — <a href="https://groq.com/privacy-policy/">groq.com/privacy-policy</a></li>
+    <li>OpenRouter — <a href="https://openrouter.ai/privacy">openrouter.ai/privacy</a></li>
+    <li>Open-Meteo (hava durumu) — <a href="https://open-meteo.com/en/terms">open-meteo.com/en/terms</a></li>
+  </ul>
+  <p><b>Yerel yapay zekâ</b> (Ollama, LM Studio) seçersen mesajların internete çıkmaz; kendi bilgisayarındaki programa gider.</p>
+
+  <h2>4. İzinler</h2>
+  <ul>
+    <li><b>Mikrofon:</b> sesli komutlar için. İstediğin zaman ayarlardan ya da çekirdeğe dokunarak kapatabilirsin.</li>
+    <li><b>Bildirimler ve alarmlar:</b> hatırlatma ve alarmların zamanında çalması için.</li>
+    <li><b>İnternet:</b> seçtiğin yapay zekâ ve hava durumu servisine bağlanmak için.</li>
+  </ul>
+
+  <h2>5. Veri güvenliği ve silme</h2>
+  <p>Servislerle bağlantı şifreli (HTTPS) yapılır; yalnızca aynı ağdaki yerel yapay zekâ programına bağlanırken şifresiz bağlantı kullanılabilir. Bütün verilerin cihazında olduğu için silmek senin elinde: uygulama içinden geçmişi ve hafızayı silebilir, ya da uygulamayı kaldırarak (Android: Ayarlar → Uygulamalar → NOVA Yapay Zeka → Depolama → Verileri temizle) her şeyi silebilirsin. Geliştiricinin elinde senin hakkında herhangi bir veri yoktur; bu yüzden geliştiriciden silinecek bir veri de yoktur.</p>
+
+  <h2>6. Çocuklar</h2>
+  <p>NOVA 13 yaşından küçük çocuklara yönelik değildir ve bilerek çocuklardan veri toplamaz.</p>
+
+  <h2>7. Değişiklikler</h2>
+  <p>Bu politika değişirse güncel hâli bu sayfada, yeni tarihiyle yayımlanır.</p>
+
+  <h2>8. İletişim</h2>
+  <p>Samet Şahin — Instagram, TikTok, YouTube ve X'te <b>@xsametsahinx</b>. Ayrıca Google Play'deki uygulama sayfasında yazan geliştirici e-posta adresinden ulaşabilirsin.</p>
+  <!-- İstersen buraya iletişim e-postanı ekle: E-posta: <a href="mailto:ADRESIN">ADRESIN</a> -->
+
+</main>
+</body>
+</html>

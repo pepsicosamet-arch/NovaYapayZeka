@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.log
+
+# Android imza anahtarı: GİZLİ, GitHub'a yükleme
+android/imza/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties

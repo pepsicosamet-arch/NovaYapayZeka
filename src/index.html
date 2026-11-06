@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; media-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src *">
+  <title>NOVA Yapay Zeka</title>
+  <link rel="icon" href="assets/logo.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="bgStatic" aria-hidden="true"></canvas>
+  <canvas id="scene" aria-hidden="true"></canvas>
+
+  <!-- Üst sol: bölüm + saat -->
+  <header class="top-left">
+    <div class="progress"><span class="progress-dot"></span><span class="progress-bar" id="progressBar"></span></div>
+    <div class="mode-label" id="modeLabel">GENEL BAKIŞ</div>
+    <div class="clock-row">
+      <div>
+        <div class="clock" id="clock">00:00</div>
+        <div class="date" id="date">—</div>
+      </div>
+      <button class="city wx-widget" id="wxWidget" title="Hava durumu">
+        <div class="wx-line"><span class="wx-mini" id="wxIcon"></span><span class="city-dash" id="wxTemp">—</span></div>
+        <div class="city-name" id="cityName">ŞEHRİN</div>
+      </button>
+    </div>
+  </header>
+
+  <!-- Üst sağ -->
+  <nav class="top-right">
+    <button class="pill" id="historyBtn" title="Konuşma geçmişi">GEÇMİŞ</button>
+    <button class="pill" id="settingsBtn" title="Ayarlar">AYARLAR</button>
+    <button class="pill" id="aboutBtn" title="Hakkında">HAKKINDA</button>
+  </nav>
+
+  <!-- Araç çubuğu -->
+  <nav class="rail" id="rail" aria-label="Araçlar"></nav>
+  <section id="tools" class="tools hidden scrollable">
+    <div class="tools-head"><b>Araçlar</b><button class="x" id="toolsClose" aria-label="Kapat">✕</button></div>
+    <div class="tool-tabs" id="toolTabs"></div>
+    <div id="toolBody"></div>
+  </section>
+
+  <!-- Alarm / hatırlatma ekranı -->
+  <div id="ring" class="ring hidden" role="alertdialog">
+    <div class="ring-box">
+      <div class="ring-pulse"></div>
+      <div class="ring-kind" id="ringKind">ALARM</div>
+      <div class="ring-title" id="ringTitle">07:30</div>
+      <div class="ring-sub" id="ringSub"></div>
+      <div class="ring-btns"><button class="pill" id="ringSnooze">5 DK ERTELE</button><button class="pill gold" id="ringStop">KAPAT</button></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Ajan düğümleri -->
+  <div id="agents" class="agents"></div>
+  <button id="coreHit" class="core-hit" aria-label="NOVA çekirdeği"></button>
+
+  <!-- Ajan kartı -->
+  <section id="card" class="card hidden" role="dialog" aria-modal="false">
+    <div class="card-head">
+      <span class="card-orb" id="cardOrb"></span>
+      <div>
+        <div class="card-title" id="cardTitle">AJAN</div>
+        <div class="card-sub" id="cardSub">—</div>
+      </div>
+      <button class="x" id="cardClose" aria-label="Kapat">✕</button>
+    </div>
+    <div class="label">NELERLE İLGİLENİR</div>
+    <ul id="cardHandles"></ul>
+    <div class="label">ÖRNEK İSTEKLER</div>
+    <div class="chips" id="cardExamples"></div>
+    <div class="card-foot" id="cardFoot"><span class="led"></span><span id="cardStatus">ÇEVRİMİÇİ — NOVA İŞİ OTOMATİK YÖNLENDİRİR</span></div>
+  </section>
+
+  <!-- Hikâye panelleri -->
+  <section id="storyAgents" class="story hidden scrollable">
+    <h2>Ajan dizini</h2>
+    <p class="muted">NOVA tek bir sohbet botu değil; her biri bir işte uzman 18 ajandan oluşan bir ekip. İsteğini yazarsın, NOVA doğru ajanı seçer.</p>
+    <div id="storyList"></div>
+  </section>
+  <section id="storyHow" class="story hidden scrollable">
+    <h2>Nasıl çalışır?</h2>
+    <ol class="steps">
+      <li><b>Konuş.</b> NOVA açılır açılmaz seni dinler; istersen aşağıdaki kutuya yaz. Çekirdeğe dokunarak mikrofonu açıp kapatırsın.</li>
+      <li><b>Yönlendir.</b> NOVA isteğinin hangi uzmana ait olduğunu anlar; o ajanın hattı altın renge döner.</li>
+      <li><b>Hatırla.</b> Hafıza ajanı, “hatırla:” diye yazdığın her şeyi saklar ve sonraki yanıtlara bağlam olarak ekler.</li>
+      <li><b>Yanıtla.</b> Gemini ya da ChatGPT ile cevap gelir ve NOVA cevabı sesli okur.</li>
+      <li><b>Araçlar.</b> Soldaki çubuk: takvim, hava durumu, geri sayım, notlar, hatırlatmalar ve alarm. Hepsi sesle de çalışır: “Yarın 9’da toplantıyı hatırlat”, “Sabah 7’ye alarm kur”, “Hava nasıl?”</li>
+    </ol>
+    <p class="muted">Kısayollar: <kbd>Ctrl</kbd>+<kbd>K</kbd> yazma kutusu · <kbd>Esc</kbd> kapat · fare tekerleği bölüm değiştirir.</p>
+  </section>
+
+  <!-- Yanıt paneli -->
+  <section id="reply" class="reply hidden scrollable" aria-live="polite">
+    <div class="reply-head"><span class="reply-agent" id="replyAgent">NOVA</span><button class="flag" id="replyFlag" title="Bu cevabı bildir" aria-label="Bu cevabı bildir">⚑ Bildir</button><button class="x" id="replyClose" aria-label="Kapat">✕</button></div>
+    <form id="reportBox" class="report hidden">
+      <div class="label">BU CEVAPTA NE SORUN VAR?</div>
+      <label><input type="radio" name="rr" value="Uygunsuz / saldırgan" checked> Uygunsuz ya da saldırgan</label>
+      <label><input type="radio" name="rr" value="Zararlı / tehlikeli"> Zararlı ya da tehlikeli</label>
+      <label><input type="radio" name="rr" value="Yanlış bilgi"> Yanlış bilgi</label>
+      <label><input type="radio" name="rr" value="Diğer"> Diğer</label>
+      <input id="reportNote" placeholder="İstersen kısa bir not ekle" maxlength="300">
+      <div class="row"><button type="button" class="pill small" id="reportCancel">VAZGEÇ</button><button class="pill gold small">BİLDİR</button></div>
+    </form>
+    <div class="reply-q" id="replyQ"></div>
+    <div class="reply-body" id="replyBody"></div>
+  </section>
+
+  <!-- Alt dok -->
+  <footer class="dock">
+    <div class="voice">
+      <canvas id="wave" width="600" height="60"></canvas>
+      <button id="dockCore" class="dock-core" aria-label="Çekirdek"><span></span></button>
+    </div>
+    <div class="status" id="status">BEKLEMEDE</div>
+    <div class="diag" id="diag"></div>
+    <div class="dots" id="dots"><i></i><i></i><i></i></div>
+    <form id="ask" class="ask" autocomplete="off">
+      <input id="askInput" type="text" placeholder="Konuş ya da yaz…  (Ctrl+K)" maxlength="4000">
+      <button type="submit" aria-label="Gönder">➤</button>
+    </form>
+    <div class="hint">KONUŞ, SENİ DİNLİYORUM · ÇEKİRDEK: MİKROFON AÇ/KAPA · KONUŞURKEN DOKUN: SUSTUR</div>
+  </footer>
+
+  <img class="badge" src="assets/logo.svg" alt="NOVA">
+
+  <!-- Geçmiş çekmecesi -->
+  <aside id="drawer" class="drawer hidden scrollable">
+    <div class="drawer-head"><b>Konuşma geçmişi</b>
+      <span><button class="pill small" id="clearHistory">TEMİZLE</button> <button class="x" id="drawerClose">✕</button></span></div>
+    <div id="historyList"></div>
+  </aside>
+
+  <!-- Ayarlar -->
+  <div id="settings" class="modal hidden">
+    <form class="modal-box scrollable" id="settingsForm">
+      <div class="drawer-head"><b>Ayarlar</b><button type="button" class="x" id="settingsClose">✕</button></div>
+      <div class="label">BULUT YAPAY ZEKÂLARI</div>
+      <p class="muted">Elindeki anahtar(lar)ı yapıştırman yeterli — model seçimini NOVA yapar. Birden fazla girersen biri çalışmazsa sıradakine geçer. Sesli dinleme için ChatGPT, Gemini ya da Groq anahtarı gerekir; ChatGPT anahtarı varsa cevaplar doğal sesle okunur. Anahtarlar bilgisayarında şifreli saklanır.</p>
+      <div id="keyList" class="keys"></div>
+      <div class="label">YEREL YAPAY ZEKÂ <small style="letter-spacing:0;color:var(--dim)">— internetsiz, ücretsiz, verin bilgisayarından çıkmaz</small></div>
+      <div class="keys">
+        <div class="key-row"><div class="key-top"><label class="check" style="margin:0"><input type="checkbox" id="l_ollama"> <span class="key-name">Ollama</span></label><span class="key-st" id="st_ollama"></span><a href="https://ollama.com/download" target="_blank" rel="noopener">İndir ↗</a></div>
+          <div class="key-in"><input id="lu_ollama" placeholder="http://localhost:11434"><input id="lm_ollama" placeholder="model: otomatik (ör. llama3.2)"></div></div>
+        <div class="key-row"><div class="key-top"><label class="check" style="margin:0"><input type="checkbox" id="l_lmstudio"> <span class="key-name">LM Studio</span></label><span class="key-st" id="st_lmstudio"></span><a href="https://lmstudio.ai" target="_blank" rel="noopener">İndir ↗</a></div>
+          <div class="key-in"><input id="lu_lmstudio" placeholder="http://localhost:1234/v1"><input id="lm_lmstudio" placeholder="model: otomatik"></div></div>
+      </div>
+      <details class="adv">
+        <summary>Gelişmiş</summary>
+        <label>Öncelik
+          <select id="sProvider"></select></label>
+        <label>Öncelikli bulut yapay zekâsının modeli <small>(boş = otomatik)</small>
+          <input id="sModel" type="text" spellcheck="false"></label>
+      </details>
+      <div class="row">
+        <label>Adın <input id="sName" type="text"></label>
+        <label>Şehir <input id="sCity" type="text"></label>
+      </div>
+      <label class="check"><input id="sListen" type="checkbox"> Açılır açılmaz beni dinle (mikrofon)</label>
+      <label class="check"><input id="sTts" type="checkbox"> Yanıtları sesli oku</label>
+      <label class="check"><input id="sTray" type="checkbox"> Kapatınca simge durumunda çalışmaya devam et (alarmlar ve hatırlatmalar için)</label>
+      <label class="check"><input id="sAuto" type="checkbox"> Windows açılınca NOVA’yı başlat</label>
+      <div class="row">
+        <button type="button" class="pill" id="testBtn">ANAHTARLARI TEST ET</button>
+        <button type="submit" class="pill gold">KAYDET</button>
+      </div>
+      <div class="muted" id="testOut"></div>
+      <hr>
+      <div class="label">HAFIZA</div>
+      <div id="memList" class="mem"></div>
+    </form>
+  </div>
+
+  <!-- Hakkında -->
+  <div id="about" class="modal hidden">
+    <div class="modal-box about-box scrollable">
+      <div class="drawer-head"><b>Hakkında</b><button type="button" class="x" id="aboutClose">✕</button></div>
+      <div class="dev">
+        <img src="assets/gelistirici.jpg" alt="Samet Şahin">
+        <div>
+          <div class="label">GELİŞTİRİCİ</div>
+          <div class="dev-name">Samet Şahin</div>
+          <div class="dev-user">@xsametsahinx</div>
+        </div>
+      </div>
+      <p class="muted">NOVA Yapay Zeka, Samet Şahin tarafından tasarlanıp geliştirildi. Seni dinleyen, konuşan, hatırlatan ve 18 uzman ajanla çalışan Türkçe bir masaüstü asistanı.</p>
+      <div class="label">SOSYAL MEDYA</div>
+      <div class="socials">
+        <a href="https://www.instagram.com/xsametsahinx" target="_blank" rel="noopener"><b>Instagram</b><span>@xsametsahinx</span></a>
+        <a href="https://www.tiktok.com/@xsametsahinx" target="_blank" rel="noopener"><b>TikTok</b><span>@xsametsahinx</span></a>
+        <a href="https://www.youtube.com/@xsametsahinx" target="_blank" rel="noopener"><b>YouTube</b><span>@xsametsahinx</span></a>
+        <a href="https://x.com/xsametsahinx" target="_blank" rel="noopener"><b>X</b><span>@xsametsahinx</span></a>
+        <a href="https://github.com/pepsicosamet-arch/NovaYapayZeka" target="_blank" rel="noopener"><b>GitHub</b><span>NOVA projesi</span></a>
+      </div>
+      <hr>
+      <div class="about"><img src="assets/logo.svg" alt=""> <div><b>NOVA Yapay Zeka</b> <span class="muted" id="ver">Sürüm 1.1.0</span><br><span class="muted" id="updStatus">Güncellemeler otomatik denetlenir.</span></div></div>
+      <div class="row" style="margin-top:12px"><button type="button" class="pill" id="updCheck">GÜNCELLEMELERİ DENETLE</button><button type="button" class="pill gold hidden" id="updInstall">YENİDEN BAŞLAT VE GÜNCELLE</button></div>
+      <p class="muted" style="margin-top:14px">© 2026 Samet Şahin · MIT Lisansı · Hava durumu verisi: Open-Meteo</p>
+    </div>
+  </div>
+
+  <script src="agents.js"></script>
+  <script src="ai-core.js"></script>
+  <script src="voice.js"></script>
+  <script src="tools.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

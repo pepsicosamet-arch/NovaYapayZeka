@@ -1,0 +1,81 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Sürüm, masaüstü uygulamasıyla aynı package.json'dan okunur
+def pkg = new groovy.json.JsonSlurper().parse(new File(rootDir, '../package.json'))
+def ver = pkg.version as String
+def parts = ver.tokenize('.').collect { it as int }
+def code = parts[0] * 10000 + parts[1] * 100 + parts[2]
+
+// İmza: önce ortam değişkenleri (GitHub), sonra android/imza/imza.properties (kendi bilgisayarın)
+def signProps = new Properties()
+def signFile = new File(rootDir, 'imza/imza.properties')
+if (signFile.exists()) signFile.withInputStream { signProps.load(it) }
+def ksPath = System.getenv('NOVA_KEYSTORE') ?: (signProps['storeFile'] ? new File(rootDir, 'imza/' + signProps['storeFile']).path : null)
+def ksPass = System.getenv('NOVA_KEYSTORE_PASSWORD') ?: signProps['storePassword']
+def hasKey = ksPath != null && new File(ksPath).exists() && ksPass
+
+android {
+    namespace 'com.nova.yapayzeka'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.nova.yapayzeka'
+        minSdk 24
+        targetSdk 36
+        versionCode code
+        versionName ver
+    }
+
+    signingConfigs {
+        if (hasKey) {
+            nova {
+                storeFile file(ksPath)
+                storePassword ksPass
+                keyAlias 'nova'
+                keyPassword ksPass
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig hasKey ? signingConfigs.nova : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main {
+            assets.srcDirs += layout.buildDirectory.dir('generated/novaWeb')
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "NOVA-Yapay-Zeka-${ver}.apk"
+        }
+    }
+
+    bundle {
+        language { enableSplit = false } // Türkçe arayüz her cihazda tam gelsin
+    }
+}
+
+// Arayüz dosyalarını (../src) uygulamanın içine kopyala; Android köprüsünü ekle
+def copyWeb = tasks.register('copyNovaWeb', Copy) {
+    from(new File(rootDir, '../src')) {
+        filesMatching('index.html') {
+            filter { line -> line.replace('<script src="agents.js"></script>', '<script src="android.js"></script>\n  <script src="agents.js"></script>') }
+        }
+    }
+    from('src/main/web-android')
+    into(layout.buildDirectory.dir('generated/novaWeb/www'))
+}
+tasks.named('preBuild') { dependsOn copyWeb }
