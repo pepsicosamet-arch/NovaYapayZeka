@@ -1,7 +1,7 @@
 {
   "name": "nova-yapay-zeka",
   "productName": "NOVA Yapay Zeka",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "NOVA Yapay Zeka — seni dinleyen, konuşan, 18 uzman ajanlı Türkçe kişisel asistan",
   "main": "main.js",
   "author": "Samet Şahin <@xsametsahinx>",

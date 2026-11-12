@@ -4,7 +4,7 @@
   const PRESETS = {
     demo:       { label: 'Demo', kind: 'demo' },
     openai:     { label: 'ChatGPT', kind: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
-    gemini:     { label: 'Gemini', kind: 'openai', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash-lite' },
+    gemini:     { label: 'Gemini', kind: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', model: 'gemini-2.5-flash-lite' },
     anthropic:  { label: 'Claude', kind: 'anthropic', baseUrl: 'https://api.anthropic.com', model: 'claude-haiku-4-5' },
     xai:        { label: 'Grok', kind: 'openai', baseUrl: 'https://api.x.ai/v1', model: 'grok-3-mini' },
     deepseek:   { label: 'DeepSeek', kind: 'openai', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
@@ -16,9 +16,20 @@
   };
   const GEMINI_NATIVE = 'https://generativelanguage.googleapis.com/v1beta';
 
+  // Google anahtarı: önce x-goog-api-key başlığı (AIza… ve yeni AQ.… anahtarları), olmazsa ?key= ile tekrar dener
+  async function geminiFetch(fetchFn, url, opts = {}, key) {
+    const k = String(key || '').trim();
+    const h = Object.assign({}, opts.headers || {}, { 'x-goog-api-key': k });
+    let res = await fetchFn(url, Object.assign({}, opts, { headers: h }));
+    if (res.ok || ![400, 401, 403].includes(res.status)) return res;
+    const h2 = Object.assign({}, opts.headers || {});
+    const res2 = await fetchFn(url + (url.includes('?') ? '&' : '?') + 'key=' + encodeURIComponent(k), Object.assign({}, opts, { headers: h2 }));
+    return res2.ok ? res2 : res;
+  }
+
   // Anahtarla çalışan bulut yapay zekâları (otomatik modda bu sırayla denenir)
   const KEY_PROVIDERS = [
-    { id: 'gemini', name: 'Gemini (Google)', note: 'ücretsiz kotası var · sesli dinleme', link: 'https://aistudio.google.com/apikey', hint: 'AIza…' },
+    { id: 'gemini', name: 'Gemini (Google)', note: 'ücretsiz kotası var · sesli dinleme', link: 'https://aistudio.google.com/apikey', hint: 'AIza… ya da AQ.…' },
     { id: 'openai', name: 'ChatGPT (OpenAI)', note: 'sesli dinleme + doğal ses', link: 'https://platform.openai.com/api-keys', hint: 'sk-…' },
     { id: 'anthropic', name: 'Claude (Anthropic)', note: '', link: 'https://console.anthropic.com/settings/keys', hint: 'sk-ant-…' },
     { id: 'xai', name: 'Grok (xAI)', note: '', link: 'https://console.x.ai', hint: 'xai-…' },
@@ -36,7 +47,7 @@
     if (/^sk-or-/.test(k)) return 'openrouter';
     if (/^gsk_/.test(k)) return 'groq';
     if (/^xai-/.test(k)) return 'xai';
-    if (/^AIza/.test(k)) return 'gemini';
+    if (/^AIza/.test(k) || /^AQ\.[A-Za-z0-9_-]{20,}/.test(k)) return 'gemini'; // eski (AIza…) ve yeni (AQ.…) Google anahtarları
     if (/^sk-[a-f0-9]{32}$/.test(k)) return 'deepseek';
     if (/^sk-/.test(k)) return 'openai';
     return null;
@@ -53,7 +64,7 @@
     let body = '';
     try { body = await res.text(); } catch (_) {}
     try { const j = JSON.parse(body); const e = Array.isArray(j) ? j[0] && j[0].error : j.error; body = (e && (e.message || e)) || j.message || body; } catch (_) {}
-    if (res.status === 401 || res.status === 403) return `Anahtar geçersiz ya da yetkisiz (${res.status}).`;
+    if (res.status === 401 || res.status === 403 || /API key not valid|API_KEY_INVALID|invalid api key/i.test(String(body))) return `Anahtar geçersiz ya da yetkisiz (${res.status}).`;
     if (res.status === 402) return 'Hesapta bakiye yok (402).';
     if (res.status === 429) return 'Kota ya da hız sınırı doldu (429). Biraz bekle veya bakiyeni kontrol et.';
     return `Sunucu hatası ${res.status}: ${String(body).slice(0, 300)}`;
@@ -102,6 +113,12 @@
       const r = await fetchFn(base + '/api/tags', {});
       if (!r.ok) return [];
       const d = await r.json(); return (d.models || []).map(m => m.name);
+    }
+    if (p === 'gemini') {
+      const r = await geminiFetch(fetchFn, base + '/models?pageSize=200', {}, key);
+      if (!r.ok) return [];
+      const d = await r.json();
+      return (d.models || []).filter(m => !m.supportedGenerationMethods || m.supportedGenerationMethods.includes('generateContent')).map(m => String(m.name || '').replace(/^models\//, '')).filter(Boolean);
     }
     const headers = p === 'anthropic'
       ? { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }
@@ -155,7 +172,22 @@
       return (d.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
     }
 
-    // OpenAI uyumlu: ChatGPT, Gemini, Grok, DeepSeek, Mistral, Groq, OpenRouter, LM Studio
+    if (pr.kind === 'gemini') {
+      const contents = messages.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: String(m.content || '') }] }));
+      const body = { contents, systemInstruction: { parts: [{ text: system }] } };
+      if (cfg.maxTokens) body.generationConfig = { maxOutputTokens: cfg.maxTokens };
+      const res = await geminiFetch(fetchFn, `${base}/models/${String(model).replace(/^models\//, '')}:generateContent`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      }, cfg.apiKey);
+      if (!res.ok) throw new Error(await readError(res));
+      const d = await res.json();
+      const c = d.candidates && d.candidates[0];
+      const text = ((c && c.content && c.content.parts) || []).map(x => x.text || '').join('').trim();
+      if (!text && d.promptFeedback && d.promptFeedback.blockReason) throw new Error('Gemini bu isteği güvenlik nedeniyle yanıtlamadı.');
+      return text;
+    }
+
+    // OpenAI uyumlu: ChatGPT, Grok, DeepSeek, Mistral, Groq, OpenRouter, LM Studio
     const headers = { 'Content-Type': 'application/json' };
     if (cfg.apiKey) headers.Authorization = 'Bearer ' + cfg.apiKey;
     if (p === 'openrouter') { headers['HTTP-Referer'] = 'https://nova-yapay-zeka.app'; headers['X-Title'] = 'NOVA Yapay Zeka'; }
@@ -188,9 +220,9 @@
     }
     if (p === 'gemini') {
       const model = await resolveModel(fetchFn, 'gemini', PRESETS.gemini.baseUrl, cfg.apiKey);
-      const res = await fetchFn(`${GEMINI_NATIVE}/models/${model.replace(/^models\//, '')}:generateContent`, {
+      const res = await geminiFetch(fetchFn, `${GEMINI_NATIVE}/models/${model.replace(/^models\//, '')}:generateContent`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': cfg.apiKey },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ role: 'user', parts: [
             { text: 'Bu ses kaydında konuşulanları Türkçe olarak kelimesi kelimesine yazıya dök. Sadece söyleneni yaz, açıklama ekleme. Anlaşılır bir konuşma yoksa hiçbir şey yazma.' },
@@ -198,7 +230,7 @@
           ] }],
           generationConfig: { temperature: 0 }
         })
-      });
+      }, cfg.apiKey);
       if (!res.ok) throw new Error(await readError(res));
       const d = await res.json();
       const parts = (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) || [];

@@ -9,8 +9,8 @@ Ortada canlı bir çekirdek, etrafında Asistan Şefi, Hafıza, Stratejist, Ara�
 1. [Node.js LTS](https://nodejs.org/tr) kur (bir kere).
 2. Bu klasörde **KUR-VE-DERLE.bat** dosyasına çift tıkla.
 3. Bitince `dist` klasörü açılır:
-   - `NOVA-Yapay-Zeka-Setup-1.1.0.exe` — Türkçe kurulum sihirbazı (masaüstü + başlat menüsü kısayolu, kurulum yeri seçimi, kaldırıcı)
-   - `NOVA-Yapay-Zeka-Tasinabilir-1.1.0.exe` — kurulum gerektirmeden çalışır
+   - `NOVA-Yapay-Zeka-Setup-1.1.1.exe` — Türkçe kurulum sihirbazı (masaüstü + başlat menüsü kısayolu, kurulum yeri seçimi, kaldırıcı)
+   - `NOVA-Yapay-Zeka-Tasinabilir-1.1.1.exe` — kurulum gerektirmeden çalışır
 
 **Yol 2 — GitHub otomatik derlesin**
 Projeyi `github.com/pepsicosamet-arch/NovaYapayZeka` deposuna yükle, sonra bir sürüm etiketi gönder:
