@@ -3,6 +3,8 @@ name: Android APK ve Play paketi (AAB) derle
 on:
   push:
     tags: ['v*']
+    branches: [main]
+    paths: ['package.json']   # package.json'daki sürüm artınca kendiliğinden derlenip yayınlanır
   workflow_dispatch:
 
 permissions:
@@ -13,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Sürüm numarası
+        shell: bash
+        run: echo "NOVA_TAG=v$(node -p "require('./package.json').version")" >> "$GITHUB_ENV"
 
       - uses: actions/setup-java@v4
         with:
@@ -38,7 +43,7 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease bundleRelease --no-daemon --stacktrace
-          mv app/build/outputs/bundle/release/*.aab "app/build/outputs/bundle/release/NOVA-Yapay-Zeka-Play-${GITHUB_REF_NAME#v}.aab" || true
+          mv app/build/outputs/bundle/release/*.aab "app/build/outputs/bundle/release/NOVA-Yapay-Zeka-Play-${NOVA_TAG#v}.aab" || true
 
       - uses: actions/upload-artifact@v4
         with:
@@ -51,8 +56,11 @@ jobs:
           path: android/app/build/outputs/bundle/release/*.aab
 
       - name: Sürüme ekle
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
           files: android/app/build/outputs/apk/release/*.apk
-          name: NOVA Yapay Zeka ${{ github.ref_name }}
+          name: NOVA Yapay Zeka ${{ env.NOVA_TAG }}
+          tag_name: ${{ env.NOVA_TAG }}
+          target_commitish: ${{ github.sha }}
+          overwrite_files: true
